@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Button, Drawer, IconButton, TextField, Typography } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useDrawerContext } from "../../../context";
@@ -17,8 +17,11 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
     aulasLecionadas: '',
     aulasAtendidas: '',
     notaP1: '',
-    notaP2: ''
+    notaP2: '',
   };
+
+  useEffect(() => { if (!isDrawerOpen) {
+    setStudentInputData(initialStudentInputData); } }, [isDrawerOpen, setStudentInputData]);
 
   if (!selectedStudent) {
     return <>{children}</>;
@@ -65,6 +68,12 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
               value={studentInputData.aulasLecionadas}
               onChange={(e) => handleInputChange(e, 'aulasLecionadas')}
               required
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
+                  e.preventDefault();
+                }
+              }}
+              
             />
             <TextField
               label="Aulas Atendidas"
@@ -72,6 +81,11 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
               value={studentInputData.aulasAtendidas}
               onChange={(e) => handleInputChange(e, 'aulasAtendidas')}
               required
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
+                  e.preventDefault();
+                }
+              }}
             />
             <TextField
               label="Nota da Prova 1"
@@ -79,13 +93,23 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
               value={studentInputData.notaP1}
               onChange={(e) => handleInputChange(e, 'notaP1')}
               required
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
+                  e.preventDefault();
+                }
+              }}
             />
             <TextField
-              required={true}
+              required
               label="Nota da Prova 2"
               margin="normal"
               value={studentInputData.notaP2}
               onChange={(e) => handleInputChange(e, 'notaP2')}
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
+                  e.preventDefault();
+                }
+              }}
             />
 
             <Button
