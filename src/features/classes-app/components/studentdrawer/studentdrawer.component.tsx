@@ -1,24 +1,20 @@
 import React, { useEffect } from 'react';
 import { Box, Button, Drawer, IconButton, TextField, Typography } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useDrawerContext } from "../../../context";
+import { useDrawerContext, initialStudentInputData } from "../../../context";
 import { useStudentContext } from "../../../context";
-import { StudentInputData } from './StudentData';
+import { IStudentInputData } from './student-drawer.types.ts';
+import { CalculateStudentStatus } from '../../../../services/calculate-student-status/calculate-student-status.service';
+import { ApiException } from '../../../../services/calculate-student-status/ApiException.service';
 
 type Props = {
   children?: React.ReactNode;
 };
 
 export const StudentDrawer: React.FC<Props> = ({ children }) => {
-  const { isDrawerOpen, toggleDrawerOpen, studentInputData, setStudentInputData } = useDrawerContext();
+  const { isDrawerOpen, toggleDrawerOpen, studentInputData, setStudentInputData} = useDrawerContext();
   const { selectedStudent } = useStudentContext();
 
-  const initialStudentInputData: StudentInputData = {
-    aulasLecionadas: '',
-    aulasAtendidas: '',
-    notaP1: '',
-    notaP2: '',
-  };
 
   useEffect(() => { if (!isDrawerOpen) {
     setStudentInputData(initialStudentInputData); } }, [isDrawerOpen, setStudentInputData]);
@@ -28,18 +24,37 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
   }
 
   const handleSubmit = () => {
-    if (!studentInputData.aulasLecionadas || !studentInputData.aulasAtendidas || !studentInputData.notaP1 || !studentInputData.notaP2) {
-      console.error('All input fields are required');
+
+    if (studentInputData.aulas_atendidas > studentInputData.aulas_lecionadas){
+      alert('Aluno não pode atender mais aulas do que o professor lecionou');
       return;
     }
-
-    console.log(studentInputData);
+    if (studentInputData.nota_p1 > 10 || studentInputData.nota_p2 > 10){
+      alert('Apenas notas de 0 a 10');
+      return;
+    }
+    console.log({studentInputData});
+    CalculateStudentStatus.calculate(studentInputData, selectedStudent)
+      .then((result) => {
+        if (result instanceof ApiException){
+          console.log(result.message);
+        } else {
+          console.log(result);
+        }
+      })
     setStudentInputData(initialStudentInputData);
     toggleDrawerOpen();
   };
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof StudentInputData) => {
-    const value = event.target.value;
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof IStudentInputData) => {
+    let value = Number(event.target.value);
+
+    if (field ==='aulas_atendidas' && value > studentInputData.aulas_lecionadas) {
+      value = studentInputData.aulas_lecionadas;
+    }
+    if ((field === 'nota_p1' || field === 'nota_p2') && value > 10){
+      value = 10;
+    }
 
     const updatedData = {
       ...studentInputData,
@@ -48,11 +63,11 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
     setStudentInputData(updatedData);
   };
 
-  const isButtonDisabled = !studentInputData.aulasLecionadas || !studentInputData.aulasAtendidas || !studentInputData.notaP1 || !studentInputData.notaP2;
+  const isButtonDisabled = !studentInputData.aulas_lecionadas || !studentInputData.aulas_atendidas || !studentInputData.nota_p1 || !studentInputData.nota_p2;
 
   return (
     <>
-      <Drawer open={isDrawerOpen} variant="temporary" anchor="right" onClose={toggleDrawerOpen}>
+      <Drawer open={isDrawerOpen} anchor="right" onClose={toggleDrawerOpen}>
         <Box p={2} width={300}>
           <IconButton style={{ float: 'right' }} onClick={toggleDrawerOpen}>
             <ArrowBackIcon />
@@ -65,8 +80,8 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
             <TextField
               label="Aulas Lecionadas"
               margin="normal"
-              value={studentInputData.aulasLecionadas}
-              onChange={(e) => handleInputChange(e, 'aulasLecionadas')}
+              value={studentInputData.aulas_lecionadas}
+              onChange={(e) => handleInputChange(e, 'aulas_lecionadas')}
               required
               onKeyDown={(e) => {
                 if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
@@ -78,8 +93,8 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
             <TextField
               label="Aulas Atendidas"
               margin="normal"
-              value={studentInputData.aulasAtendidas}
-              onChange={(e) => handleInputChange(e, 'aulasAtendidas')}
+              value={studentInputData.aulas_atendidas}
+              onChange={(e) => handleInputChange(e, 'aulas_atendidas')}
               required
               onKeyDown={(e) => {
                 if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
@@ -90,8 +105,8 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
             <TextField
               label="Nota da Prova 1"
               margin="normal"
-              value={studentInputData.notaP1}
-              onChange={(e) => handleInputChange(e, 'notaP1')}
+              value={studentInputData.nota_p1}
+              onChange={(e) => handleInputChange(e, 'nota_p1')}
               required
               onKeyDown={(e) => {
                 if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
@@ -103,8 +118,8 @@ export const StudentDrawer: React.FC<Props> = ({ children }) => {
               required
               label="Nota da Prova 2"
               margin="normal"
-              value={studentInputData.notaP2}
-              onChange={(e) => handleInputChange(e, 'notaP2')}
+              value={studentInputData.nota_p2}
+              onChange={(e) => handleInputChange(e, 'nota_p2')}
               onKeyDown={(e) => {
                 if (!/[0-9]/.test(e.key) && e.key !== '.' && e.key !== 'Backspace' && e.key !== 'Delete') {
                   e.preventDefault();

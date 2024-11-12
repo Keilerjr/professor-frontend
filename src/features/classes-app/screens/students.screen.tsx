@@ -5,7 +5,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useListStudentsFromClassById } from '../../../hooks/use-list-students-from-class-by-id/use-list-students-from-class-by-id.hook';
 import { useDrawerContext } from '../../context';
 import { useStudentContext} from '../../context';
-import { Student } from '../components/studentdrawer/StudentData';
+import { IStudent } from '../components/studentdrawer/student-drawer.types.ts';
 
 export const StudentsScreen: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();
@@ -18,7 +18,7 @@ export const StudentsScreen: React.FC = () => {
     navigate('/'); 
   };
   
-  const handleStudentClick = (student: Student) => {
+  const handleStudentClick = (student: IStudent) => {
     setSelectedStudent(student);
     toggleDrawerOpen();
   }

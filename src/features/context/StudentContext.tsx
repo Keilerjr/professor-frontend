@@ -1,28 +1,24 @@
 import React, { createContext, useContext, useState} from 'react';
-import { Student, StudentContextType } from '../classes-app/components/studentdrawer/StudentData';
+import { IStudent, IStudentContextType } from '../classes-app/components/studentdrawer/student-drawer.types.ts';
 
 type Props = {
     children?: React.ReactNode
   };
 
+const StudentContext = createContext({} as IStudentContextType);
 
-const StudentContext = createContext<StudentContextType | undefined>(undefined);
+export const useStudentContext = () => {
+    return useContext(StudentContext);
+};
 
 export const StudentProvider: React.FC<Props> = ({ children }) => {
-    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
 
     return (
-        <StudentContext.Provider value={{ selectedStudent, setSelectedStudent }}>
+        <StudentContext.Provider value={{ selectedStudent, setSelectedStudent}}>
             {children}
         </StudentContext.Provider>
     );
 };
 
-export const useStudentContext = () => {
-    const context = useContext(StudentContext);
-    if (!context) {
-        throw new Error('useStudentContext must be used within a StudentProvider');
-    }
-    return context;
-};
 
